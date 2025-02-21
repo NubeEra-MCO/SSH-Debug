@@ -1,0 +1,46 @@
+name: SSH Debug Demo Enhanced
+
+on:
+  workflow_dispatch:
+    inputs:
+      debug_mode:
+        description: 'Enable extended debugging'
+        required: false
+        default: 'false'
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        run: |
+          echo "DEBUG_MODE=${{ github.event.inputs.debug_mode }}" >> $GITHUB_ENV
+          mkdir -p debug_folder
+          echo "Sample content" > debug_folder/test.txt
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        with:
+          timeout-minutes: 50
+
+      - name: Show system info
+        run: |
+          echo "System Information:"
+          uname -a
+          df -h
+          free -m
+
+      - name: Conditional failing step
+        if: ${{ env.DEBUG_MODE == 'true' }}
+        run: |
+          echo "This step will fail for demonstration"
+          exit 1
+
+      - name: Final step
+        run: |
+          echo "Workflow completed"
+          ls -R
